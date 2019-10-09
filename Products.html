@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>card store - Products</title>
+    <meta charset="utf-8" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet"/>
+    <link href="Content/Site.css" rel="stylesheet" />
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script src="Scripts/jquery.tmpl.min.js"></script>
+    <script src="Scripts/linq.min.js"></script>
+    <script src="Scripts/catalog.js"></script>
+    <script src="Scripts/basket.js"></script>
+    <script>
+        $(function () {
+            var basket=JSON.parse(sessionStorage.getItem("basket"));
+            if(basket!=null){
+                card=basket;
+                console.log(card);
+                total=sum(card);
+                $("#total").text(total);
+            }
+
+           
+            categoryBinder();
+            catalogBinder(0,"ASC");
+            $("#cmbCategories").change(function () {
+                catalogBinder(this.value,$("#sort").val());
+            });
+            $("#sort").change(function () {
+                catalogBinder($("#cmbCategories").val(), this.value);
+            });
+            $("#checkout").click(function () {
+                sessionStorage.setItem("basket",JSON.stringify(card));
+                $(location).attr('href', 'Checkout.html');
+
+            });
+
+        });
+    
+    
+        function categoryBinder() {
+            categories = Enumerable.From(categories).Where("$.isActive==true").OrderBy("$.categoryName").ToArray();
+            $.each(categories, function (index, item) {
+                $("#cmbCategories").append($("<option>", { value: item.categoryId, text: item.categoryName }));
+            });
+        }
+    
+    
+        function catalogBinder(categoryId,orderby) {
+            var currentProducts;
+            if (categoryId != 0) {
+                currentProducts = Enumerable.From(products).Where(x=>x.categoryId == categoryId).ToArray();
+            }
+            else {
+                currentProducts = products;
+            }
+            if (orderby === "ASC") {
+                currentProducts = Enumerable.From(currentProducts).OrderBy(x=>x.name).ToArray();
+            }
+            else if (orderby === "DESC") {
+                currentProducts = Enumerable.From(currentProducts).OrderByDescending(x=>x.name).ToArray();
+            }
+            var catalog = $("#catalog");
+            catalog.html(' ');
+            $("#boxTemplate").tmpl(currentProducts).appendTo("#catalog");
+        }
+   
+    
+        function insert(id) {
+            var product=Enumerable.From(products).Where(x=>x.id==id).SingleOrDefault();
+            var item={item:product,qnt:1};
+            console.log(item);
+            total=total+Number(product.price);
+            $("#total").text(total);
+            if(Enumerable.From(card).Any(x=>x.item.id==product.id)){
+                Enumerable.From(card).Where(x=>x.item.id==id).Select(function (x) {
+                    x.qnt=x.qnt+1;
+                }).ToArray();
+            }
+            else{
+                card.push(item);
+            }
+        }
+    </script>
+    <script id="boxTemplate" type="text/x-jquery-tmpl">
+        <div class="box" data-id="${id}">
+            <a href="Product.html?p=${id}" target="_self">
+                <img src="Images/Products/${id}.jpg" alt="${name}" />
+            </a>
+            <a href="Product.html?p=${id}" target="_self">
+                <h3>${name}</h3>
+            </a>
+            <h4>Price: ${price}$</h4>
+            <button id="#" type="button" class="btn btn-info" onclick="insert(${id})">Add</button>
+        </div>
+    </script>
+</head>
+<body>
+    <div id="header">
+        <h1>Playing card store</h1>
+        <div class="form-group col-md-4">
+            <select class="form-control" id="cmbCategories">
+                <option value="0">All</option>
+            </select>
+        </div>
+        <div class="form-group col-md-4">
+            <select class="form-control" id="sort">
+                <option value="ASC">Order By ASC...</option>
+                <option value="DESC">Order By DESC</option>
+            </select>
+        </div>
+        <div class="card col-md-2 right">
+            <a href="Checkout.html" target="_self" id="checkout">
+                <img src="Images/Theme/card-icon.png" alt="checkout" />
+            </a>
+            <span>|</span>
+           <span>Total: </span> <span id="total">0</span><span>$</span>
+        </div>
+    </div>
+    <div id="catalog" class="col-md-12">
+
+    </div>
+</body>
+</html>

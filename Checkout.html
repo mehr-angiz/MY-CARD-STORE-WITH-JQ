@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>playing card- Invoice</title>
+    <meta charset="utf-8" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script src="Scripts/jquery.tmpl.min.js"></script>
+    <script src="Scripts/linq.min.js"></script>
+    <script src="Scripts/basket.js"></script>
+    <script>
+        var card = JSON.parse(sessionStorage.getItem("basket"));
+    </script>
+    <script>
+        $(function () {
+            console.log(card);
+            $("#row").tmpl(card).appendTo("#bill");
+            $("#sum").text("SUM: " + sum(card) + "$");
+            $("#count").text("Count: " + card.length);
+            $("#back").click(function () {
+                sessionStorage.setItem("basket",JSON.stringify(card));
+                $(location).attr('href', 'Products.html');
+            });
+        });
+    </script>
+    <script>
+        function remove(id) {
+            var item= $("#row"+id);
+            item.addClass("remove");
+            item.hide("slow",function () {
+                item.remove();
+                for (var i = 0; i < card.length; i++) {
+                    if(card[i].item.id==id){
+                        card.splice(i,1);
+                    }
+                }
+                console.log(card);
+                $("#sum").text("SUM: " + sum(card) + "$");
+                $("#count").text("Count: " + card.length);
+            });
+        }
+    </script>
+    <script id="row" type="text/x-jquery-tmpl">
+        <tr id="row${item.id}">
+            <td>${item.name}</td>
+            <td>${qnt}</td>
+            <td>${item.price}</td>
+            <td>${qnt*item.price}</td>
+            <td>
+                <button type="button" class="btn btn-danger" onclick="remove(${item.id})">Remove</button>
+            </td>
+        </tr>
+    </script>
+</head>
+<body>
+    <div id="header">
+        <h1>My Store</h1>
+    </div>
+    <div class="col-md-12">
+        <h2>Invoice</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qnt.</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="bill"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" id="sum"></td>
+                    <td colspan="2" id="count"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <a href="Products.html" class="btn btn-warning" target="_self">Back To Catalog</a>
+        <a href="Product.html"  class="btn btn-info">Pay Invoice</a>
+    </div>
+</body>
+</html>

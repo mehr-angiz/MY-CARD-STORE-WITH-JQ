@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Playing card store</title>
+    <meta charset="utf-8" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script src="Scripts/catalog.js"></script>
+    <script src="Scripts/linq.min.js"></script>
+    <script src="Scripts/jquery.tmpl.min.js"></script>
+
+    <script>
+        $(function () {
+            var p = getUrl()["p"];
+            //alert(p);
+            var product = Enumerable.From(products).Where(x=>x.id == p).SingleOrDefault();
+            if (product != null) {
+                var category = Enumerable.From(categories).Where(x=>x.categoryId == product.categoryId).SingleOrDefault();
+                var join = { category: category, product: product };
+                $("#contentTemplate").tmpl(join).appendTo("#content");
+                $("title").text("My Food - "+product.name);
+            }
+            else {
+                $("#notFoundTemplate").tmpl().appendTo("#content");
+                $("title").text("playing card - Not Found");
+            }
+        });
+    </script>
+    <script>
+        function getUrl() {
+            var vars = [];
+            var hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+    </script>
+    <script id="contentTemplate" type="text/x-jquery-tmpl">
+        <div id="spec" class="left col-md-7">
+            <label class="name">${product.name}</label>
+            <p>
+                <span>Catgeory:</span>
+                <label>${category.categoryName}</label>
+            </p>
+            <p>
+                <span>Price:</span>
+                <label>${product.price}$</label>
+            </p>
+            <p>
+                <span>Ingrediants:</span>
+                <label>Blob Blob</label>
+            </p>
+
+        </div>
+        <div class="right col-md-3">
+            <img src="Images/Products/${product.id}.jpg" alt="${product.name}" />
+        </div>
+    </script>
+    <script type="text/x-jquery-tmpl" id="notFoundTemplate">
+        <div class="error">
+            <p>
+                This Product Not Found!!!
+            </p>
+        </div>
+    </script>
+</head>
+<body>
+    <div id="header">
+        <h1>Playing card store</h1>
+    </div>
+    <div id="content" class="clear">
+
+    </div>
+    <a href="Products.html" class="btn btn-info" target="_self">Back To Catalog</a>
+
+</body>
+</html>
